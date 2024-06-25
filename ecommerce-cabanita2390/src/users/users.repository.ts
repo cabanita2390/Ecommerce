@@ -153,11 +153,6 @@ export class UsersRepository {
     return newUser;
   }
 
-  async getUsersAuth(): Promise<User[]> {
-    //!por borrar
-    return await users;
-  }
-
   async getUserByEmail(email) {
     const userByEmail = users.find((user) => user.email === email);
 

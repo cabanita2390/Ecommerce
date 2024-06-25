@@ -20,13 +20,13 @@ export class UsersController {
 
   //*GET /users
   @Get()
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   getUsers(@Query('page') page: string, @Query('limit') limit: string) {
     return this.usersService.getUsers(page, limit);
   }
 
   @Get('/:id')
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   getUserById(@Param('id') id: string) {
     const user = this.usersService.getUserById(id);
     return user;
@@ -40,18 +40,18 @@ export class UsersController {
   }
 
   @Put('/:id')
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   updateUser(@Body() dataUser: UserModificate, @Param('id') id: string) {
     const updatedUser = this.usersService.updateUser(dataUser, id);
     return updatedUser;
   }
 
   @Delete('/:id')
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   deleteUser(@Param('id') id: string) {
     const deletedUser = this.usersService.deleteUser(id);
     return deletedUser;
   }
 }
 
-//pendiente actividad 04 de clase 4 y lecture clase 5. Video: 49:22
+//1:53 typeORM
