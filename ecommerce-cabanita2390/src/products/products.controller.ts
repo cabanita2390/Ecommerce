@@ -9,11 +9,16 @@ import {
   Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Product, ProductModificate } from './products.repository';
+// import { Product, ProductModificate } from './products.repository';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Get('seeder')
+  addProducts() {
+    return this.productsService.addProducts();
+  }
 
   @Get()
   getProducts(@Query('page') page: string, @Query('limit') limit: string) {
@@ -26,33 +31,33 @@ export class ProductsController {
     return product;
   }
 
-  @Post()
-  createProduct(@Body() product: Product) {
-    if (
-      !product.id ||
-      !product.name ||
-      !product.description ||
-      !product.price ||
-      !product.stock ||
-      !product.imgUrl
-    )
-      return 'Datos incompletos';
-    const newProduct = this.productsService.createProduct(product);
-    return newProduct;
-  }
+  // @Post()
+  // createProduct(@Body() product: Product) {
+  //   if (
+  //     !product.id ||
+  //     !product.name ||
+  //     !product.description ||
+  //     !product.price ||
+  //     !product.stock ||
+  //     !product.imgUrl
+  //   )
+  //     return 'Datos incompletos';
+  //   const newProduct = this.productsService.createProduct(product);
+  //   return newProduct;
+  // }
 
-  @Put('/:id')
-  updateProduct(
-    @Body() dataProduct: ProductModificate,
-    @Param('id') id: string,
-  ) {
-    const updatedProduct = this.productsService.updateProduct(dataProduct, id);
-    return updatedProduct;
-  }
+  // @Put('/:id')
+  // updateProduct(
+  //   @Body() dataProduct: ProductModificate,
+  //   @Param('id') id: string,
+  // ) {
+  //   const updatedProduct = this.productsService.updateProduct(dataProduct, id);
+  //   return updatedProduct;
+  // }
 
-  @Delete('/:id')
-  deleteProdut(@Param('id') id: string) {
-    const deletedProdut = this.productsService.deleteProdut(id);
-    return deletedProdut;
-  }
+  // @Delete('/:id')
+  // deleteProdut(@Param('id') id: string) {
+  //   const deletedProdut = this.productsService.deleteProdut(id);
+  //   return deletedProdut;
+  // }
 }

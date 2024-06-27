@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import {
-  Product,
-  ProductModificate,
+  // Product,
+  // ProductModificate,
   ProductsRepository,
 } from './products.repository';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly productsRepository: ProductsRepository) {}
+
+  addProducts() {
+    return this.productsRepository.addProducts();
+  }
 
   getProducts(page: string, limit: string) {
     const pageNumber = Number(page);
@@ -26,6 +30,7 @@ export class ProductsService {
     return product;
   }
 
+  /*
   createProduct(product: Product) {
     const newProduct = this.productsRepository.createProduct(product);
     return newProduct;
@@ -43,4 +48,5 @@ export class ProductsService {
     const deletedProdut = this.productsRepository.deleteProdut(id);
     return deletedProdut;
   }
+    */
 }

@@ -1,80 +1,76 @@
 import { Injectable } from '@nestjs/common';
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: boolean;
-  imgUrl: string;
-}
-
-export interface ProductModificate {
-  id?: string;
-  name?: string;
-  description?: string;
-  price?: number;
-  stock?: boolean;
-  imgUrl?: string;
-}
-
-const products: Product[] = [
-  {
-    id: 'p001',
-    name: 'Smartphone X1',
-    description: 'A powerful smartphone with 6GB RAM and 128GB storage.',
-    price: 699.99,
-    stock: true,
-    imgUrl: 'https://example.com/images/smartphone-x1.jpg',
-  },
-  {
-    id: 'p002',
-    name: 'Wireless Headphones',
-    description:
-      'Noise-cancelling over-ear headphones with 20 hours of battery life.',
-    price: 199.99,
-    stock: true,
-    imgUrl: 'https://example.com/images/wireless-headphones.jpg',
-  },
-  {
-    id: 'p003',
-    name: 'Gaming Laptop',
-    description: 'High-performance gaming laptop with 16GB RAM and 512GB SSD.',
-    price: 1499.99,
-    stock: false,
-    imgUrl: 'https://example.com/images/gaming-laptop.jpg',
-  },
-  {
-    id: 'p004',
-    name: '4K Monitor',
-    description: '27-inch 4K monitor with HDR support and 144Hz refresh rate.',
-    price: 499.99,
-    stock: true,
-    imgUrl: 'https://example.com/images/4k-monitor.jpg',
-  },
-];
+import { InjectRepository } from '@nestjs/typeorm';
+import { Categories } from 'src/entities/categories.entity';
+import { Products } from 'src/entities/products.entity';
+import { Repository } from 'typeorm';
+import * as data from '../utils/data.json';
 
 @Injectable()
 export class ProductsRepository {
-  async getProducts(page: number, limit: number) {
-    if (!page) page = 1;
-    if (!limit) limit = 5;
+  constructor(
+    @InjectRepository(Products)
+    private readonly productsRepository: Repository<Products>,
+    @InjectRepository(Categories)
+    private readonly categoriesRepository: Repository<Categories>,
+  ) {}
 
+  async getProducts(page: number, limit: number) {
+    let products = await this.productsRepository.find({
+      relations: {
+        category: true,
+      },
+    });
     const start = (page - 1) * limit;
     const end = start + limit;
+    products = products.slice(start, end);
 
-    const producToRenderize = products.slice(start, end);
-
-    return producToRenderize;
+    return products;
   }
 
   async getProductByID(id: string) {
-    const product = await products.find((product) => product.id === id);
+    const product = await this.productsRepository.findOneBy({ id });
 
     if (!product) return 'Producto no encontrado';
     return product;
   }
 
+  async addProducts() {
+    //Verficiamos que exista la categoria
+    const categories = await this.categoriesRepository.find();
+
+    data?.map(async (element) => {
+      const category = categories.find(
+        (category) => category.name === element.category,
+      );
+      // Creamos nuevo Product y seteamos atributos:
+      const product = new Products();
+      product.name = element.name;
+      product.description = element.description;
+      product.price = element.price;
+      product.stock = element.stock;
+      product.imgUrl = element.imgUrl;
+      product.category = category;
+
+      //Grabamos el nuevo producto en la BBDD
+      await this.productsRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Products)
+        .values(product)
+        .orUpdate(['description', 'price', 'imgUrl', 'stock', 'name']) //Si el producto ya existía, lo actualizamos
+        .execute();
+    });
+    return 'Productos agregados';
+  }
+  async updateProduct(product: Products, id: string) {
+    await this.productsRepository.update(id, product);
+
+    const updatedProduct = await this.productsRepository.findOneBy({ id });
+
+    return updatedProduct;
+  }
+
+  /*
   async createProduct(product: Product) {
     products.push(product);
 
@@ -82,23 +78,6 @@ export class ProductsRepository {
     return productId;
   }
 
-  async updateProduct(dataProduct: ProductModificate, id: string) {
-    //Buscamos el producto
-    const productFound = products.find((product) => product.id === id);
-
-    // Si no existe retornamos
-    if (!productFound) return 'Producto no encontrado';
-
-    //Si el producto existe, actualizamos la info
-    if (dataProduct.name) productFound.name = dataProduct.name;
-    if (dataProduct.description)
-      productFound.description = dataProduct.description;
-    if (dataProduct.price) productFound.price = dataProduct.price;
-    if (dataProduct.stock) productFound.stock = dataProduct.stock;
-    if (dataProduct.imgUrl) productFound.imgUrl = dataProduct.imgUrl;
-
-    return productFound.id;
-  }
 
   async deleteProdut(id: string) {
     const productIndexFound = products.findIndex(
@@ -110,4 +89,5 @@ export class ProductsRepository {
 
     return id;
   }
+    */
 }
