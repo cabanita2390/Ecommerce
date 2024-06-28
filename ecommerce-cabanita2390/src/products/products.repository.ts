@@ -15,11 +15,15 @@ export class ProductsRepository {
   ) {}
 
   async getProducts(page: number, limit: number) {
+    if (!page) page = 1;
+    if (!limit) limit = 5;
+
     let products = await this.productsRepository.find({
       relations: {
         category: true,
       },
     });
+    console.log('products.repository. products:', products);
     const start = (page - 1) * limit;
     const end = start + limit;
     products = products.slice(start, end);
@@ -35,33 +39,47 @@ export class ProductsRepository {
   }
 
   async addProducts() {
-    //Verficiamos que exista la categoria
     const categories = await this.categoriesRepository.find();
+    if (!categories) return 'categories no existe';
 
-    data?.map(async (element) => {
-      const category = categories.find(
-        (category) => category.name === element.category,
-      );
-      // Creamos nuevo Product y seteamos atributos:
-      const product = new Products();
-      product.name = element.name;
-      product.description = element.description;
-      product.price = element.price;
-      product.stock = element.stock;
-      product.imgUrl = element.imgUrl;
-      product.category = category;
+    const savedProducts = await Promise.all(
+      data.map(async (product) => {
+        const category = categories.find(
+          (cat) => cat.name === product.category,
+        );
 
-      //Grabamos el nuevo producto en la BBDD
-      await this.productsRepository
-        .createQueryBuilder()
-        .insert()
-        .into(Products)
-        .values(product)
-        .orUpdate(['description', 'price', 'imgUrl', 'stock', 'name']) //Si el producto ya existía, lo actualizamos
-        .execute();
-    });
-    return 'Productos agregados';
+        if (!category) {
+          throw new Error(`La categoría ${product.category} no existe`);
+        }
+
+        // Verifica si el producto ya existe
+        const existingProduct = await this.productsRepository.findOne({
+          where: { name: product.name },
+        });
+        if (existingProduct) return existingProduct;
+
+        const newProduct = this.productsRepository.create({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          stock: product.stock,
+          category: category,
+          imgUrl: product.imgUrl,
+        });
+
+        await this.productsRepository.save(newProduct);
+        return newProduct;
+      }),
+    );
+
+    const productList = savedProducts.map((product) => ({
+      id: product.id,
+      name: product.name,
+    }));
+
+    return productList;
   }
+
   async updateProduct(product: Products, id: string) {
     await this.productsRepository.update(id, product);
 

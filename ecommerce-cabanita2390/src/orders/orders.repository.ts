@@ -1,0 +1,85 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { OrderDetails } from 'src/entities/orderDetails.entity';
+import { Orders } from 'src/entities/orders.entity';
+import { Products } from 'src/entities/products.entity';
+import { Users } from 'src/entities/users.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class OrdersRepository {
+  constructor(
+    @InjectRepository(Orders)
+    private readonly ordersRepository: Repository<Orders>,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
+    @InjectRepository(OrderDetails)
+    private readonly orderDetailsRepository: Repository<OrderDetails>,
+    @InjectRepository(Products)
+    private readonly productsRepository: Repository<Products>,
+  ) {}
+
+  async addOrder(userId: string, products: any) {
+    let total = 0;
+
+    //Verificamos el usuario exista
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) return `Usuario con id: ${userId} no encontrado`;
+
+    //*Creamos un registro en la tabla ORDERS
+    const order = new Orders();
+    order.date = new Date();
+    order.user = user;
+
+    const newOrder = await this.ordersRepository.save(order);
+
+    //Asociamos cada 'id' con el 'producto'
+    const productsArray = await Promise.all(
+      products.map(async (element) => {
+        const product = await this.productsRepository.findOneBy({
+          id: element.id,
+        });
+        if (!product) return 'Producto no encontrado';
+        //Calculamos el monto total:
+        total += Number(product.price);
+        //Actualizamos el stock:
+        await this.productsRepository.update(
+          { id: element.id },
+          { stock: product.stock - 1 },
+        );
+
+        return product;
+      }),
+    );
+
+    //Creamos "OrderDetail" y la insertamos en BBDD:
+    const orderDetail = new OrderDetails();
+
+    orderDetail.price = Number(Number(total).toFixed(2));
+    orderDetail.products = productsArray;
+    orderDetail.orders = newOrder;
+
+    await this.ordersRepository.save(orderDetail);
+
+    //Enviamos al cliente la compra con la info de productos:
+    return await this.ordersRepository.find({
+      where: { id: newOrder.id },
+      relations: { orderDetails: true },
+    });
+  }
+
+  async getOrder(id: string) {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: {
+        orderDetails: {
+          products: true,
+        },
+      },
+    });
+
+    if (!order) return 'Orden no encontrada';
+
+    return order;
+  }
+}
