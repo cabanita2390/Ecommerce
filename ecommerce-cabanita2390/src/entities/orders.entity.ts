@@ -19,7 +19,6 @@ export class Orders {
   @Column()
   date: Date;
 
-  //Acá van las relaciones:
   // Relación 1:N con users
   @ManyToOne(() => Users, (user) => user.orders)
   @JoinColumn({ name: 'user_id' })
@@ -27,5 +26,6 @@ export class Orders {
 
   // Relación 1:1 con orderDetails
   @OneToOne(() => OrderDetails, (orderDetail) => orderDetail.orders)
+  @JoinColumn({ name: 'orderDetails_id' }) // Asegúrate de que el nombre de la columna es correcto
   orderDetails: OrderDetails;
 }

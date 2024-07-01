@@ -20,9 +20,7 @@ export class OrderDetails {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   price: number;
 
-  //Acá van las relaciones:
-
-  // order_id:  Relación 1:1 con orders
+  // Relación 1:1 con orders
   @OneToOne(() => Orders, (order) => order.orderDetails)
   @JoinColumn({ name: 'order_id' })
   orders: Orders;
@@ -32,11 +30,11 @@ export class OrderDetails {
   @JoinTable({
     name: 'ORDERDETAILS_PRODUCTS',
     joinColumn: {
-      name: 'product_id',
+      name: 'orderdetail_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'orderdetail_id',
+      name: 'product_id',
       referencedColumnName: 'id',
     },
   })

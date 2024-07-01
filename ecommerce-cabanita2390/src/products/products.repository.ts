@@ -23,7 +23,6 @@ export class ProductsRepository {
         category: true,
       },
     });
-    console.log('products.repository. products:', products);
     const start = (page - 1) * limit;
     const end = start + limit;
     products = products.slice(start, end);

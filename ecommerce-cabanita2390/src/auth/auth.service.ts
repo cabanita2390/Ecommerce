@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User, UsersRepository } from 'src/users/users.repository';
+import { UsersRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class AuthService {
@@ -13,8 +13,8 @@ export class AuthService {
     if (!email || !password) return 'Debe ingresar usuario y contraseña';
 
     const userFound = await this.usersRepository.getUserByEmail(email);
-    if (!userFound || userFound.password !== password)
-      return 'Credenciales incorrectas';
+    // if (!userFound || userFound.password !== password)
+    //   return 'Credenciales incorrectas';
 
     return 'Usuario loggeado...(Se envía Token)';
   }
