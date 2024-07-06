@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Categories } from 'src/entities/categories.entity';
 import { Products } from 'src/entities/products.entity';
 import { Repository } from 'typeorm';
 import * as data from '../utils/data.json';
+import { UpdateProductDto } from './products.dto';
 
 @Injectable()
 export class ProductsRepository {
@@ -33,13 +38,17 @@ export class ProductsRepository {
   async getProductByID(id: string) {
     const product = await this.productsRepository.findOneBy({ id });
 
-    if (!product) return 'Producto no encontrado';
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado');
+    }
     return product;
   }
 
   async addProducts() {
     const categories = await this.categoriesRepository.find();
-    if (!categories) return 'categories no existe';
+    if (!categories) {
+      throw new NotFoundException('No existe la categoría');
+    }
 
     const savedProducts = await Promise.all(
       data.map(async (product) => {
@@ -79,7 +88,12 @@ export class ProductsRepository {
     return productList;
   }
 
-  async updateProduct(product: Products, id: string) {
+  async updateProduct(product: UpdateProductDto, id: string) {
+    //validar si el producto existe
+    const productFound = await this.productsRepository.findOneBy({ id });
+
+    if (!productFound) throw new BadRequestException('Producto no existe');
+
     await this.productsRepository.update(id, product);
 
     const updatedProduct = await this.productsRepository.findOneBy({ id });

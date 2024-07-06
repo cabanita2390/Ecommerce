@@ -1,6 +1,8 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/users.entity';
 import { Repository } from 'typeorm';
+import { updateUserDto } from './users.dto';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 export class UsersRepository {
   constructor(
@@ -27,29 +29,55 @@ export class UsersRepository {
       where: { id },
       relations: { orders: true },
     });
-    if (!user) return 'No se encontró el usuario';
+
+    // Validar si el usuario no existe
+    if (!user) {
+      throw new NotFoundException('No se encontró el usuario');
+    }
+
     const { password, ...userNoPassword } = user;
-
     return userNoPassword;
   }
 
-  async addUser(user: Users) {
+  async signUp(user: Partial<Users>) {
     const newUser = await this.usersRepository.save(user);
-    const { password, ...userNoPassword } = newUser;
 
+    const dbUser = await this.usersRepository.findOneBy({
+      id: newUser.id,
+    });
+
+    const { password, ...userNoPassword } = dbUser;
     return userNoPassword;
   }
 
-  async updateUser(dataUser: Users, id: string) {
+  async updateUser(dataUser: updateUserDto, id: string) {
+    // Validar si el usuario no existe
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('No se encontró el usuario');
+    }
+
+    // Validar si no hay datos para actualizar
+    if (!dataUser || Object.keys(dataUser).length === 0) {
+      throw new BadRequestException('No hay campos válidos para actualizar');
+    }
+
     await this.usersRepository.update(id, dataUser);
-    const updateUser = await this.usersRepository.findOneBy({ id });
-    const { password, ...userNoPassword } = updateUser;
+    const updatedUser = await this.usersRepository.findOneBy({ id });
+
+    const { password, ...userNoPassword } = updatedUser;
     return userNoPassword;
   }
 
   async deleteUser(id: string) {
     const user = await this.usersRepository.findOneBy({ id });
-    this.usersRepository.remove(user);
+
+    // Validar si el usuario no existe
+    if (!user) {
+      throw new NotFoundException('No se encontró el usuario');
+    }
+
+    await this.usersRepository.remove(user);
     const { password, ...userNoPassword } = user;
     return userNoPassword;
   }

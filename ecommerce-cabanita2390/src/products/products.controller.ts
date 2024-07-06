@@ -1,14 +1,22 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { UpdateProductDto } from './products.dto';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Role } from 'src/users/roles.enum';
+import { Roles } from 'src/decorators/roles.decorator';
 // import { Product, ProductModificate } from './products.repository';
 
 @Controller('products')
@@ -26,7 +34,7 @@ export class ProductsController {
   }
 
   @Get('/:id')
-  getProductById(@Param('id') id: string) {
+  getProductById(@Param('id', ParseUUIDPipe) id: string) {
     const product = this.productsService.getProductByID(id);
     return product;
   }
@@ -46,14 +54,23 @@ export class ProductsController {
   //   return newProduct;
   // }
 
-  // @Put('/:id')
-  // updateProduct(
-  //   @Body() dataProduct: ProductModificate,
-  //   @Param('id') id: string,
-  // ) {
-  //   const updatedProduct = this.productsService.updateProduct(dataProduct, id);
-  //   return updatedProduct;
-  // }
+  @Put('/:id')
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard, RolesGuard)
+  updateProduct(
+    @Body() dataProduct: UpdateProductDto,
+    @Param('id') id: string,
+  ) {
+    // Verificar si 'dataProduct' es nulo o está vacío
+    if (!dataProduct || Object.keys(dataProduct).length === 0) {
+      throw new BadRequestException(
+        'Los datos de actualización son requeridos',
+      );
+    }
+
+    const updatedProduct = this.productsService.updateProduct(dataProduct, id);
+    return updatedProduct;
+  }
 
   // @Delete('/:id')
   // deleteProdut(@Param('id') id: string) {

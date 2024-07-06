@@ -4,6 +4,7 @@ import {
   // ProductModificate,
   ProductsRepository,
 } from './products.repository';
+import { UpdateProductDto } from './products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -35,8 +36,8 @@ export class ProductsService {
     const newProduct = this.productsRepository.createProduct(product);
     return newProduct;
   }
-
-  updateProduct(dataProduct: ProductModificate, id: string) {
+*/
+  updateProduct(dataProduct: UpdateProductDto, id: string) {
     const updatedProduct = this.productsRepository.updateProduct(
       dataProduct,
       id,
@@ -44,9 +45,8 @@ export class ProductsService {
     return updatedProduct;
   }
 
-  deleteProdut(id: string) {
-    const deletedProdut = this.productsRepository.deleteProdut(id);
-    return deletedProdut;
-  }
-    */
+  // deleteProdut(id: string) {
+  //   const deletedProdut = this.productsRepository.deleteProdut(id);
+  //   return deletedProdut;
+  // }
 }

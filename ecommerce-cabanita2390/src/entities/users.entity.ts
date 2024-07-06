@@ -14,8 +14,8 @@ export class Users {
   @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
   email: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: false })
-  password?: string;
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  password: string;
 
   @Column({ type: 'bigint' })
   phone: number;
@@ -29,8 +29,10 @@ export class Users {
   @Column({ length: 50 })
   city: string;
 
-  //Acá va la relación:
-  //orders_id: Relación 1:N con orders
+  @Column({ default: false })
+  isAdmin: boolean;
+
+  // Relación con orders
   @OneToMany(() => Orders, (order) => order.user)
   orders: Orders[];
 }
