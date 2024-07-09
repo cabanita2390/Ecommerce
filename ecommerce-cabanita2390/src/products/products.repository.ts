@@ -46,7 +46,7 @@ export class ProductsRepository {
 
   async addProducts() {
     const categories = await this.categoriesRepository.find();
-    if (!categories) {
+    if (!categories || categories.length === 0) {
       throw new NotFoundException('No existe la categoría');
     }
 

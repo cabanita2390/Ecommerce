@@ -11,6 +11,9 @@ import { CategoriesModule } from './categories/categories.module';
 import { OrdersModule } from './orders/orders.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { JwtModule } from '@nestjs/jwt';
+import { UsersService } from './users/users.service';
+import { CategoriesService } from './categories/categories.service';
+import { ProductsService } from './products/products.service';
 
 @Module({
   imports: [

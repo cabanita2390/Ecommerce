@@ -22,5 +22,3 @@ const config = {
 
 export const typeOrmConfig = registerAs('typeorm', () => config); //Se declara en el app module, en imports, con ConfigModule
 export const connectionSource = new DataSource(config as DataSourceOptions); //Se declara en el app module, en imports, con ConfigModule
-
-//Vamos en 3:04

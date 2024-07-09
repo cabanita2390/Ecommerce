@@ -12,7 +12,7 @@ export class CategoriesRepository {
   ) {}
 
   async addCategories() {
-    data?.map(async (element) => {
+    for (const element of data) {
       await this.categoriesRepository
         .createQueryBuilder()
         .insert()
@@ -20,7 +20,7 @@ export class CategoriesRepository {
         .values({ name: element.category })
         .orIgnore()
         .execute();
-    });
+    }
     return 'Categorias agregadas';
   }
 
